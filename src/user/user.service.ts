@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { hash } from 'argon2'
-import { PrismaService } from 'src/prisma.service'
+import { PrismaService } from '../prisma.service'
 import { UserDto } from './dto/user.dto'
 import { returnUserObject } from './return-user.object'
 
@@ -64,7 +64,7 @@ export class UserService {
 					data: { userId, productId }
 				})
 			}
-			return 'toggle favorite success'
+			return 'success'
 		})
 	}
 }

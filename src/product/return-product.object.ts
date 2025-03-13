@@ -1,19 +1,21 @@
-import { Prisma } from '@prisma/client';
-import { returnCategoryObject } from 'src/category/return-category.object';
-import { returnReviewObject } from 'src/review/return-review.object';
+import { Prisma } from '@prisma/client'
+import { returnCategoryObject } from 'src/category/return-category.object'
+import { returnReviewObject } from 'src/review/return-review.object'
 
 export const returnProductObject: Prisma.ProductSelect = {
-  id: true,
-  name: true,
-  description: true,
-  price: true,
-  slug: true,
-  images: true,
-  cretedAt: true,
-};
+	id: true,
+	name: true,
+	description: true,
+	price: true,
+	slug: true,
+	images: true,
+	cretedAt: true,
+	category: { select: returnCategoryObject },
+	reviews: { select: returnReviewObject }
+}
 
 export const returnProductObjectFullest: Prisma.ProductSelect = {
-  ...returnProductObject,
-  reviews: { select: returnReviewObject },
-  category: { select: returnCategoryObject },
-};
+	...returnProductObject,
+	reviews: { select: returnReviewObject },
+	category: { select: returnCategoryObject }
+}
