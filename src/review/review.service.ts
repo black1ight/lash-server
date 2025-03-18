@@ -14,10 +14,10 @@ export class ReviewService {
 
 	async create(dto: ReviewDto, userId: number, productId: number) {
 		const isExist = await this.product.byId(productId)
-		console.log(isExist)
 
 		if (!isExist) throw new NotFoundException('product not found')
-		return await this.prisma.review.create({
+
+		const newReview = await this.prisma.review.create({
 			data: {
 				...dto,
 				productId,
@@ -25,6 +25,10 @@ export class ReviewService {
 			},
 			select: returnReviewObject
 		})
+
+		this.product.updateRank(productId)
+
+		return newReview
 	}
 
 	async byId(id: number) {

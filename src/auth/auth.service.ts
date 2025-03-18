@@ -1,111 +1,139 @@
 import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
-import { hash, verify } from 'argon2';
-import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
-import { AuthDto } from './dto/auth.dto';
+	BadRequestException,
+	Injectable,
+	NotFoundException,
+	UnauthorizedException
+} from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
+import { JwtService } from '@nestjs/jwt'
+import { User } from '@prisma/client'
+import { hash, verify } from 'argon2'
+import { Response } from 'express'
+import { PrismaService } from 'src/prisma.service'
+import { AuthDto } from './dto/auth.dto'
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private prisma: PrismaService,
-    private jwt: JwtService,
-  ) {}
+	EXPIRE_DAY_REFRESH_TOKEN = 1
+	REFRESH_TOKEN_NAME = 'refreshToken'
 
-  async login(dto: AuthDto) {
-    const user = await this.validateUser(dto);
-    const tokens = await this.issueTokens(user.id);
+	constructor(
+		private prisma: PrismaService,
+		private jwt: JwtService,
+		private configService: ConfigService
+	) {}
 
-    return {
-      user: this.returnUserFields(user),
-      ...tokens,
-    };
-  }
+	async login(dto: AuthDto) {
+		const user = await this.validateUser(dto)
+		const tokens = await this.issueTokens(user.id)
 
-  async getNewTokens(refreshToken: string) {
-    const result = await this.jwt.verifyAsync(refreshToken);
+		return {
+			user: this.returnUserFields(user),
+			...tokens
+		}
+	}
 
-    if (!result) throw new UnauthorizedException('Invalid refresh token');
+	async getNewTokens(refreshToken: string) {
+		const result = await this.jwt.verifyAsync(refreshToken)
 
-    const user = await this.prisma.user.findUnique({
-      where: {
-        id: result.id,
-      },
-    });
+		if (!result) throw new UnauthorizedException('Invalid refresh token')
 
-    if (user) {
-      const tokens = await this.issueTokens(user.id);
+		const user = await this.prisma.user.findUnique({
+			where: {
+				id: result.id
+			}
+		})
 
-      return {
-        user: this.returnUserFields(user),
-        ...tokens,
-      };
-    }
-  }
+		if (user) {
+			const tokens = await this.issueTokens(user.id)
 
-  async register(dto: AuthDto) {
-    const existUser = await this.prisma.user.findUnique({
-      where: {
-        email: dto.email,
-      },
-    });
+			return {
+				user: this.returnUserFields(user),
+				...tokens
+			}
+		}
+	}
 
-    if (existUser) throw new BadRequestException('User already exist');
+	async register(dto: AuthDto) {
+		const existUser = await this.prisma.user.findUnique({
+			where: {
+				email: dto.email
+			}
+		})
 
-    const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        password: await hash(dto.password),
-        phone: dto.phone || '',
-      },
-    });
+		if (existUser) throw new BadRequestException('User already exist')
 
-    const tokens = await this.issueTokens(user.id);
+		const user = await this.prisma.user.create({
+			data: {
+				email: dto.email,
+				password: await hash(dto.password),
+				phone: dto.phone || ''
+			}
+		})
 
-    return {
-      user: this.returnUserFields(user),
-      ...tokens,
-    };
-  }
+		const tokens = await this.issueTokens(user.id)
 
-  private async issueTokens(userId: number) {
-    const data = { id: userId };
+		return {
+			user: this.returnUserFields(user),
+			...tokens
+		}
+	}
 
-    const accessToken = this.jwt.sign(data, {
-      expiresIn: '1h',
-    });
+	private async issueTokens(userId: number) {
+		const data = { id: userId }
 
-    const refreshToken = this.jwt.sign(data, {
-      expiresIn: '7d',
-    });
+		const accessToken = this.jwt.sign(data, {
+			expiresIn: '1h'
+		})
 
-    return { accessToken, refreshToken };
-  }
+		const refreshToken = this.jwt.sign(data, {
+			expiresIn: '1d'
+		})
 
-  private returnUserFields(user: User) {
-    return {
-      id: user.id,
-      email: user.email,
-    };
-  }
+		return { accessToken, refreshToken }
+	}
 
-  private async validateUser(dto: AuthDto) {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        email: dto.email,
-      },
-    });
-    if (!user) throw new NotFoundException('User not found');
+	private returnUserFields(user: User) {
+		return {
+			id: user.id,
+			email: user.email
+		}
+	}
 
-    const isValid = await verify(user.password, dto.password);
+	private async validateUser(dto: AuthDto) {
+		const user = await this.prisma.user.findUnique({
+			where: {
+				email: dto.email
+			}
+		})
+		if (!user) throw new NotFoundException('User not found')
 
-    if (!isValid) throw new UnauthorizedException('Invalid password');
+		const isValid = await verify(user.password, dto.password)
 
-    return user;
-  }
+		if (!isValid) throw new UnauthorizedException('Invalid password')
+
+		return user
+	}
+
+	addRefreshTokenToResponce(res: Response, refreshToken: string) {
+		const expiresIn = new Date()
+		expiresIn.setDate(expiresIn.getDate() + this.EXPIRE_DAY_REFRESH_TOKEN)
+
+		res.cookie(this.REFRESH_TOKEN_NAME, refreshToken, {
+			httpOnly: true,
+			domain: this.configService.get('SERVER_URL'),
+			expires: expiresIn,
+			secure: true,
+			sameSite: 'none'
+		})
+	}
+	removeRefreshTokenFromResponce(res: Response) {
+		res.cookie(this.REFRESH_TOKEN_NAME, '', {
+			httpOnly: true,
+			domain: this.configService.get('SERVER_URL'),
+			expires: new Date(0),
+			secure: true,
+			sameSite: 'none'
+		})
+	}
 }

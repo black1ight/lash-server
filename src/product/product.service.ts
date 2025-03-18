@@ -52,6 +52,10 @@ export class ProductService {
 			prismaSort.push({ price: 'asc' })
 		} else if (sort === enumProductSort.HIGH_PRICE) {
 			prismaSort.push({ price: 'desc' })
+		} else if (sort === enumProductSort.RANK) {
+			prismaSort.push({ rank: 'desc' })
+		} else if (sort === enumProductSort.DISCOUNT) {
+			prismaSort.push({ discount: 'desc' })
 		} else if (sort === enumProductSort.OLDEST) {
 			prismaSort.push({ cretedAt: 'asc' })
 		} else {
@@ -87,7 +91,7 @@ export class ProductService {
 			where: prismaSearchTermFilter,
 			orderBy: prismaSort,
 			select: returnProductObject,
-			skip,
+			// skip,
 			take: perPage
 		})
 
@@ -117,17 +121,42 @@ export class ProductService {
 		return product
 	}
 
-	async byCategory(categorySlug: string) {
-		const product = await this.prisma.product.findMany({
+	async byCategory(dto: getAllProductDto = {}, categorySlug: string) {
+		const { sort, searchTerm } = dto
+		const prismaSort: Prisma.ProductOrderByWithRelationInput[] = []
+
+		if (sort === enumProductSort.LOW_PRICE) {
+			prismaSort.push({ price: 'asc' })
+		} else if (sort === enumProductSort.HIGH_PRICE) {
+			prismaSort.push({ price: 'desc' })
+		} else if (sort === enumProductSort.RANK) {
+			prismaSort.push({ rank: 'desc' })
+		} else if (sort === enumProductSort.DISCOUNT) {
+			prismaSort.push({ discount: 'desc' })
+		} else if (sort === enumProductSort.OLDEST) {
+			prismaSort.push({ cretedAt: 'asc' })
+		} else {
+			prismaSort.push({ cretedAt: 'desc' })
+		}
+
+		const { perPage, skip } = this.paginationService.getPagination(dto)
+
+		const products = await this.prisma.product.findMany({
 			where: {
 				category: {
 					slug: categorySlug
 				}
 			},
-			select: returnProductObjectFullest
+			orderBy: prismaSort,
+			select: returnProductObject,
+			// skip,
+			take: perPage
 		})
-		if (!product) throw new NotFoundException('product not found')
-		return product
+
+		return {
+			products,
+			length: products.length
+		}
 	}
 
 	async getSimilar(id: number) {
@@ -154,7 +183,8 @@ export class ProductService {
 		const isSameProduct = await this.prisma.product.findUnique({
 			where: {
 				name: dto.name
-			}
+			},
+			select: returnProductObject
 		})
 
 		if (isSameProduct && id !== isSameProduct.id)
@@ -170,7 +200,23 @@ export class ProductService {
 				description: dto.description,
 				categoryId: dto.categoryId,
 				price: dto.price,
-				slug: slugGenerate(dto.name)
+				slug: slugGenerate(dto.name),
+				discount: dto.discount
+			}
+		})
+	}
+
+	async updateRank(productId: number) {
+		const product = await this.byId(productId)
+		const rankValue =
+			product.reviews.reduce((acc, rev) => {
+				return acc + rev.rating
+			}, 0) / product.reviews.length
+
+		return this.prisma.product.update({
+			where: { id: productId },
+			data: {
+				rank: rankValue
 			}
 		})
 	}

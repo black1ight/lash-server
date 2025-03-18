@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { hash } from 'argon2'
+import { returnProductObject } from 'src/product/return-product.object'
 import { PrismaService } from '../prisma.service'
 import { UserDto } from './dto/user.dto'
 import { returnUserObject } from './return-user.object'
@@ -15,7 +16,7 @@ export class UserService {
 			select: {
 				...returnUserObject,
 				favorites: {
-					select: { product: true }
+					include: { product: { select: returnProductObject } }
 				},
 				...selectObject
 			}
