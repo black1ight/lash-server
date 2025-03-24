@@ -42,7 +42,7 @@ export class ProductController {
 
 	@Get('by-slug/:slug')
 	// @Auth()
-	bySlug(@Param() slug: string) {
+	bySlug(@Param('slug') slug: string) {
 		return this.productService.bySlug(slug)
 	}
 

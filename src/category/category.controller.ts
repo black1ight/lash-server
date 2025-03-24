@@ -6,7 +6,9 @@ import {
 	HttpCode,
 	Param,
 	Patch,
-	Post
+	Post,
+	UsePipes,
+	ValidationPipe
 } from '@nestjs/common'
 import { Auth } from 'src/auth/decorators/auth.decorator'
 import { CategoryService } from './category.service'
@@ -16,11 +18,12 @@ import { CategoryDto } from './dto/category.dto'
 export class CategoryController {
 	constructor(private readonly categoryService: CategoryService) {}
 
+	@UsePipes(new ValidationPipe())
 	@HttpCode(200)
 	@Auth()
 	@Post()
-	create() {
-		return this.categoryService.create()
+	create(@Body() dto: CategoryDto) {
+		return this.categoryService.create(dto)
 	}
 
 	@Auth()

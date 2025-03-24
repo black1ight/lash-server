@@ -22,6 +22,12 @@ export class UserController {
 		return this.userService.byId(id)
 	}
 
+	@Get('profile/:id')
+	@Auth()
+	byId(@Param('id') id: string) {
+		return this.userService.byId(+id)
+	}
+
 	@HttpCode(200)
 	@Auth()
 	@Put('profile')
