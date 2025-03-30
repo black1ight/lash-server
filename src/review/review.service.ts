@@ -43,7 +43,7 @@ export class ReviewService {
 	async findAll() {
 		return await this.prisma.review.findMany({
 			orderBy: {
-				cretedAt: 'desc'
+				createdAt: 'desc'
 			},
 			select: returnReviewObject
 		})

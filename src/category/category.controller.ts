@@ -5,8 +5,8 @@ import {
 	Get,
 	HttpCode,
 	Param,
-	Patch,
 	Post,
+	Put,
 	UsePipes,
 	ValidationPipe
 } from '@nestjs/common'
@@ -26,7 +26,6 @@ export class CategoryController {
 		return this.categoryService.create(dto)
 	}
 
-	@Auth()
 	@Get('by-slug/:slug')
 	bySlug(@Param('slug') slug: string) {
 		return this.categoryService.bySlug(slug)
@@ -46,7 +45,7 @@ export class CategoryController {
 
 	@HttpCode(200)
 	@Auth()
-	@Patch(':id')
+	@Put(':id')
 	update(@Param('id') id: string, @Body() dto: CategoryDto) {
 		return this.categoryService.update(+id, dto)
 	}

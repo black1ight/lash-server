@@ -26,7 +26,7 @@ export class AuthController {
 	) {
 		const { refreshToken, ...response } = await this.authService.register(dto)
 
-		this.authService.addRefreshTokenToResponce(res, refreshToken)
+		this.authService.addRefreshTokenToResponse(res, refreshToken)
 
 		return response
 	}
@@ -37,11 +37,10 @@ export class AuthController {
 	async login(@Body() dto: AuthDto, @Res({ passthrough: true }) res: Response) {
 		const { refreshToken, ...response } = await this.authService.login(dto)
 
-		this.authService.addRefreshTokenToResponce(res, refreshToken)
+		this.authService.addRefreshTokenToResponse(res, refreshToken)
 
 		return response
 	}
-
 	@UsePipes(new ValidationPipe())
 	@HttpCode(200)
 	@Post('login/access-token')
@@ -53,7 +52,7 @@ export class AuthController {
 			req.cookies[this.authService.REFRESH_TOKEN_NAME]
 
 		if (!refreshTokenFromCookies) {
-			this.authService.removeRefreshTokenFromResponce(res)
+			this.authService.removeRefreshTokenFromResponse(res)
 			throw new UnauthorizedException('Refresh token not found')
 		}
 
@@ -61,7 +60,7 @@ export class AuthController {
 
 		if (data) {
 			const { refreshToken, ...response } = data
-			this.authService.addRefreshTokenToResponce(res, refreshToken)
+			this.authService.addRefreshTokenToResponse(res, refreshToken)
 			return response
 		}
 	}
@@ -69,7 +68,7 @@ export class AuthController {
 	@HttpCode(200)
 	@Post('logout')
 	async logout(@Res({ passthrough: true }) res: Response) {
-		this.authService.removeRefreshTokenFromResponce(res)
+		this.authService.removeRefreshTokenFromResponse(res)
 		return true
 	}
 }

@@ -35,7 +35,9 @@ export class ProductService {
 			data: {
 				name: dto.name,
 				description: dto.description,
+				images: dto.images,
 				price: dto.price,
+				discount: dto.discount,
 				slug: slugGenerate(dto.name),
 				categoryId: dto.categoryId
 			}

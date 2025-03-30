@@ -34,7 +34,6 @@ export class ReviewController {
 		return this.reviewService.byId(+id)
 	}
 
-	@Auth()
 	@Get()
 	findAll() {
 		return this.reviewService.findAll()

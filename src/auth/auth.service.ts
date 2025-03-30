@@ -26,6 +26,7 @@ export class AuthService {
 	async login(dto: AuthDto) {
 		const user = await this.validateUser(dto)
 		const tokens = await this.issueTokens(user.id)
+		console.log(tokens)
 
 		return {
 			user: this.returnUserFields(user),
@@ -116,7 +117,7 @@ export class AuthService {
 		return user
 	}
 
-	addRefreshTokenToResponce(res: Response, refreshToken: string) {
+	addRefreshTokenToResponse(res: Response, refreshToken: string) {
 		const expiresIn = new Date()
 		expiresIn.setDate(expiresIn.getDate() + this.EXPIRE_DAY_REFRESH_TOKEN)
 
@@ -124,17 +125,17 @@ export class AuthService {
 			httpOnly: true,
 			domain: this.configService.get('SERVER_URL'),
 			expires: expiresIn,
-			secure: true,
-			sameSite: 'none'
+			secure: false,
+			sameSite: 'lax'
 		})
 	}
-	removeRefreshTokenFromResponce(res: Response) {
+	removeRefreshTokenFromResponse(res: Response) {
 		res.cookie(this.REFRESH_TOKEN_NAME, '', {
 			httpOnly: true,
 			domain: this.configService.get('SERVER_URL'),
 			expires: new Date(0),
-			secure: true,
-			sameSite: 'none'
+			secure: false,
+			sameSite: 'lax'
 		})
 	}
 }
