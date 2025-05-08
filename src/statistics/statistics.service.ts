@@ -55,7 +55,7 @@ export class StatisticsService {
 
 		const salesRaw = await this.prisma.order.findMany({
 			where: {
-				cretedAt: {
+				createdAt: {
 					gte: startDate,
 					lte: endDate
 				}
@@ -70,7 +70,7 @@ export class StatisticsService {
 		const salesByDate = new Map<string, number>()
 
 		salesRaw.forEach(order => {
-			const formattedDate = formatDate(new Date(order.cretedAt))
+			const formattedDate = formatDate(new Date(order.createdAt))
 			const total = order.items.reduce((total, item) => {
 				return total + item.price * item.quantity
 			}, 0)
@@ -91,7 +91,7 @@ export class StatisticsService {
 
 	private async getLastUsers() {
 		const lastUsers = await this.prisma.user.findMany({
-			orderBy: { cretedAt: 'desc' },
+			orderBy: { createdAt: 'desc' },
 			take: 5,
 			include: {
 				orders: {

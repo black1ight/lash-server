@@ -34,26 +34,22 @@ export class ProductController {
 		return this.productService.byId(+id)
 	}
 
-	@Get('similar/:id')
-	@Auth()
-	getSimilar(@Param('id') id: string) {
-		return this.productService.getSimilar(+id)
+	@Get('similar/:slug')
+	getSimilar(@Param('slug') slug: string) {
+		return this.productService.getSimilar(slug)
 	}
 
 	@Get('by-slug/:slug')
-	// @Auth()
 	bySlug(@Param('slug') slug: string) {
 		return this.productService.bySlug(slug)
 	}
 
 	@UsePipes(new ValidationPipe())
 	@Get('by-category/:slug')
-	// @Auth()
 	byCategory(@Query() queryDto: getAllProductDto, @Param('slug') slug: string) {
 		return this.productService.byCategory(queryDto, slug)
 	}
 
-	@UsePipes(new ValidationPipe())
 	@Get()
 	findAll(@Query() queryDto: getAllProductDto) {
 		return this.productService.findAll(queryDto)

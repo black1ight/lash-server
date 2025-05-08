@@ -9,10 +9,7 @@ import { PrismaService } from 'src/prisma.service'
 import { slugGenerate } from 'src/utils/slug-generate'
 import { enumProductSort, getAllProductDto } from './dto/get-all.product.dto'
 import { ProductDto } from './dto/product.dto'
-import {
-	returnProductObject,
-	returnProductObjectFullest
-} from './return-product.object'
+import { returnProductObject } from './return-product.object'
 
 @Injectable()
 export class ProductService {
@@ -48,6 +45,7 @@ export class ProductService {
 
 	async findAll(dto: getAllProductDto = {}) {
 		const { sort, searchTerm } = dto
+
 		const prismaSort: Prisma.ProductOrderByWithRelationInput[] = []
 
 		if (sort === enumProductSort.LOW_PRICE) {
@@ -59,9 +57,9 @@ export class ProductService {
 		} else if (sort === enumProductSort.DISCOUNT) {
 			prismaSort.push({ discount: 'desc' })
 		} else if (sort === enumProductSort.OLDEST) {
-			prismaSort.push({ cretedAt: 'asc' })
+			prismaSort.push({ createdAt: 'asc' })
 		} else {
-			prismaSort.push({ cretedAt: 'desc' })
+			prismaSort.push({ createdAt: 'desc' })
 		}
 
 		const prismaSearchTermFilter: Prisma.ProductWhereInput = searchTerm
@@ -73,11 +71,15 @@ export class ProductService {
 									contains: searchTerm,
 									mode: 'insensitive'
 								}
-							},
+							}
+						},
+						{
 							name: {
 								contains: searchTerm,
 								mode: 'insensitive'
-							},
+							}
+						},
+						{
 							description: {
 								contains: searchTerm,
 								mode: 'insensitive'
@@ -108,7 +110,7 @@ export class ProductService {
 	async byId(id: number) {
 		const product = await this.prisma.product.findUnique({
 			where: { id },
-			select: returnProductObjectFullest
+			select: returnProductObject
 		})
 		if (!product) throw new NotFoundException('product not found')
 		return product
@@ -117,8 +119,9 @@ export class ProductService {
 	async bySlug(slug: string) {
 		const product = await this.prisma.product.findUnique({
 			where: { slug },
-			select: returnProductObjectFullest
+			select: returnProductObject
 		})
+
 		if (!product) throw new NotFoundException('product not found')
 		return product
 	}
@@ -136,9 +139,9 @@ export class ProductService {
 		} else if (sort === enumProductSort.DISCOUNT) {
 			prismaSort.push({ discount: 'desc' })
 		} else if (sort === enumProductSort.OLDEST) {
-			prismaSort.push({ cretedAt: 'asc' })
+			prismaSort.push({ createdAt: 'asc' })
 		} else {
-			prismaSort.push({ cretedAt: 'desc' })
+			prismaSort.push({ createdAt: 'desc' })
 		}
 
 		const { perPage, skip } = this.paginationService.getPagination(dto)
@@ -161,8 +164,8 @@ export class ProductService {
 		}
 	}
 
-	async getSimilar(id: number) {
-		const currentProduct = await this.byId(id)
+	async getSimilar(slug: string) {
+		const currentProduct = await this.bySlug(slug)
 
 		if (!currentProduct) throw new NotFoundException('currentProduct not found')
 
@@ -174,7 +177,7 @@ export class ProductService {
 				}
 			},
 			orderBy: {
-				cretedAt: 'desc'
+				createdAt: 'desc'
 			},
 			select: returnProductObject
 		})

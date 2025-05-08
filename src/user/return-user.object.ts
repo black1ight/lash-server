@@ -6,5 +6,18 @@ export const returnUserObject: Prisma.UserSelect = {
 	password: false,
 	phone: true,
 	avatarPath: true,
-	orders: true
+	orders: {
+		include: {
+			items: {
+				include: {
+					product: {
+						select: {
+							name: true,
+							images: true
+						}
+					}
+				}
+			}
+		}
+	}
 }

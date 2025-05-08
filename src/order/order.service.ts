@@ -34,6 +34,7 @@ export class OrderService {
 				}
 			}
 		})
+		return order
 	}
 
 	async findAll() {
@@ -45,8 +46,9 @@ export class OrderService {
 			where: {
 				userId
 			},
+			include: { items: { include: { product: true } } },
 			orderBy: {
-				cretedAt: 'desc'
+				createdAt: 'desc'
 			}
 		})
 	}

@@ -11,7 +11,7 @@ export const returnProductObject: Prisma.ProductSelect = {
 	rank: true,
 	discount: true,
 	images: true,
-	cretedAt: true,
+	createdAt: true,
 	orderItems: true,
 	category: { select: returnCategoryObject },
 	reviews: { select: returnReviewObject }
