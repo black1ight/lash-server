@@ -68,7 +68,7 @@ export class AuthService {
 			data: {
 				email: dto.email,
 				password: await hash(dto.password),
-				phone: dto.phone || '',
+				phone: dto.phone,
 				avatarPath: 'https://cdn-icons-png.flaticon.com/512/6596/6596121.png'
 			}
 		})

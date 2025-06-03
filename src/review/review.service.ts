@@ -40,6 +40,16 @@ export class ReviewService {
 		return review
 	}
 
+	async byProductId(id: number) {
+		const reviews = await this.prisma.review.findMany({
+			where: { product: { id } },
+			select: returnReviewObject
+		})
+		if (!reviews) throw new Error('review not found')
+
+		return reviews
+	}
+
 	async findAll() {
 		return await this.prisma.review.findMany({
 			orderBy: {
@@ -55,7 +65,8 @@ export class ReviewService {
 				id
 			},
 			data: {
-				...dto
+				text: dto.text,
+				rating: dto.rating
 			}
 		})
 	}

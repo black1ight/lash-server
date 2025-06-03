@@ -34,6 +34,12 @@ export class ReviewController {
 		return this.reviewService.byId(+id)
 	}
 
+	@Auth()
+	@Get('byProductId/:id')
+	byProductId(@Param('id') id: string) {
+		return this.reviewService.byProductId(+id)
+	}
+
 	@Get()
 	findAll() {
 		return this.reviewService.findAll()
